@@ -1,0 +1,31 @@
+{
+  "records": [
+    {
+      "id": "mrbua04bh3gf6n",
+      "date": "2026-07-08",
+      "type": "night",
+      "bedTime": "23:30",
+      "wakeTime": "07:00",
+      "duration": 7.5,
+      "quality": 2
+    },
+    {
+      "id": "mrbua1p64sytq2",
+      "date": "2026-07-08",
+      "type": "nap",
+      "bedTime": "13:00",
+      "wakeTime": "14:00",
+      "duration": 1,
+      "quality": 2
+    },
+    {
+      "id": "mrbukh37mhyu87",
+      "date": "2026-07-08",
+      "type": "nap",
+      "bedTime": "15:59",
+      "wakeTime": "16:59",
+      "duration": 1,
+      "quality": 2
+    }
+  ]
+}
