@@ -28,7 +28,7 @@ export default function HomePage() {
   const [exerciseRecords, setExerciseRecords] = useState<ExerciseRecord[]>([])
   const [mood, setMood] = useState<MoodRecord | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [panel, setPanel] = useState<'water' | 'sleep' | null>(null)
+  const [panel, setPanel] = useState<'water' | 'sleep' | 'exercise' | null>(null)
 
   const fetchAllData = useCallback(async () => {
     if (!date) return
@@ -69,46 +69,49 @@ export default function HomePage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-5">
-      {/* 日期导航 */}
+      {/* Date nav */}
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => changeDate(-1)} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100 transition-all">←</button>
+        <button onClick={() => changeDate(-1)} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100">←</button>
         <div className="text-center">
           <div className="text-base font-semibold text-gray-900">{isToday ? '今天' : date?.split('-').slice(1).join('/')}</div>
           <div className="text-[11px] text-gray-400">{formatDateCN(date)}</div>
         </div>
-        <button onClick={() => changeDate(1)} disabled={isToday} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-all">→</button>
+        <button onClick={() => changeDate(1)} disabled={isToday} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100 disabled:opacity-30">→</button>
       </div>
 
-      {/* 三个总览卡片 */}
+      {/* Stat cards */}
       <div className="grid grid-cols-4 gap-2 mb-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm">
           <UtensilsCrossed className="w-4 h-4 text-teal-500 mx-auto mb-1" />
           <div className="text-lg font-bold text-gray-900">{entries.length}</div>
           <div className="text-[10px] text-gray-400">饮食</div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm">
+        <button onClick={() => setPanel('water')}
+          className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm active:scale-95 transition-all hover:border-sky-200">
           <Droplets className="w-4 h-4 text-sky-500 mx-auto mb-1" />
           <div className="text-lg font-bold text-gray-900">{water ? water.totalMl : '—'}</div>
           <div className="text-[10px] text-gray-400">饮水</div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm">
+        </button>
+        <button onClick={() => setPanel('sleep')}
+          className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm active:scale-95 transition-all hover:border-indigo-200">
           <Moon className="w-4 h-4 text-indigo-500 mx-auto mb-1" />
           <div className="text-lg font-bold text-gray-900">{totalSleep > 0 ? totalSleep.toFixed(1) : '—'}</div>
           <div className="text-[10px] text-gray-400">睡眠</div>
-        </div>
-        <button onClick={() => setPanel('water')} className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm hover:border-green-200 transition-all active:scale-95">
+        </button>
+        <button onClick={() => setPanel('exercise')}
+          className="bg-white rounded-2xl border border-gray-100 p-3 text-center shadow-sm active:scale-95 transition-all hover:border-green-200">
           <span className="text-lg">🏃</span>
           <div className="text-lg font-bold text-gray-900">{totalExercise > 0 ? totalExercise : '—'}</div>
           <div className="text-[10px] text-gray-400">运动</div>
         </button>
       </div>
 
-      {/* 心情 */}
+      {/* Mood */}
       <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm mb-4">
         <MoodEntry date={date} current={mood?.mood} onSaved={fetchAllData} />
       </div>
 
-      {/* 饮食记录 */}
+      {/* Food diary */}
       <div className="mb-5">
         <FoodEntryForm date={date} onEntryAdded={fetchAllData} />
         {isLoading && <div className="animate-pulse space-y-2 mt-3"><div className="h-4 bg-gray-100 rounded w-16" /><div className="h-14 bg-gray-50 rounded-xl" /><div className="h-14 bg-gray-50 rounded-xl" /></div>}
@@ -121,33 +124,25 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* 饮水 + 睡眠 + 运动 弹出面板 */}
+      {/* Bottom panel */}
       {panel && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center touch-none">
           <div className="absolute inset-0 bg-black/20" onClick={() => setPanel(null)} />
           <div className="relative bg-white rounded-2xl w-full max-w-md mx-4 p-5 shadow-xl animate-slide-up">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-900">
-                {panel === 'water' ? '💧 饮水 + 🏃 运动' : '🌙 睡眠'}
+                {panel === 'water' ? '💧 饮水' : panel === 'sleep' ? '🌙 睡眠' : '🏃 运动'}
               </h3>
               <button onClick={() => setPanel(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-400" /></button>
             </div>
-            <div className="space-y-4">
-              {panel === 'water' && (
-                <>
-                  <WaterEntry date={date} logs={water?.logs || []} currentMl={water?.totalMl} onSaved={fetchAllData} />
-                  <div className="border-t border-gray-100 pt-3">
-                    <ExerciseEntry date={date} records={exerciseRecords} onSaved={fetchAllData} />
-                  </div>
-                </>
-              )}
-              {panel === 'sleep' && <SleepEntry date={date} records={sleepRecords} onSaved={fetchAllData} />}
-            </div>
+            {panel === 'water' && <WaterEntry date={date} logs={water?.logs || []} currentMl={water?.totalMl} onSaved={fetchAllData} />}
+            {panel === 'sleep' && <SleepEntry date={date} records={sleepRecords} onSaved={fetchAllData} />}
+            {panel === 'exercise' && <ExerciseEntry date={date} records={exerciseRecords} onSaved={fetchAllData} />}
           </div>
         </div>
       )}
 
-      {/* AI 分析 */}
+      {/* AI Analysis */}
       <div><AIAnalysisCard date={date} entriesCount={entries.length} analysis={null} /></div>
     </div>
   )
