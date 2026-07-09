@@ -144,10 +144,10 @@ export default function FoodEntryForm({ date, onEntryAdded }: FoodEntryFormProps
                   <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isScanning}
                     className="px-3 py-2.5 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-1 text-sm">
                     {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                    <span className="hidden sm:inline">拍照</span>
+                    <span className="hidden sm:inline">拍照/相册</span>
                   </button>
                 </div>
-                <input ref={fileInputRef} type="file" accept="image/*" capture="environment"
+                <input ref={fileInputRef} type="file" accept="image/*"
                   onChange={handleImageCapture} className="hidden" />
               </div>
 
