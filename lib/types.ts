@@ -77,11 +77,60 @@ export interface SleepRecord {
   note?: string
 }
 
+/** Exercise type / 运动类型 */
+export type ExerciseType = 'run' | 'walk' | 'skip' | 'yoga' | 'other'
+
+export const EXERCISE_LABELS: Record<ExerciseType, string> = {
+  run: '🏃 跑步', walk: '🚶 走路', skip: '跳绳', yoga: '🧘 瑜伽', other: '其他',
+}
+
+/** Exercise record / 运动记录 */
+export interface ExerciseRecord {
+  id: string
+  date: string
+  type: ExerciseType
+  duration: number // minutes
+  note?: string
+}
+
+/** Mood / 心情 */
+export type Mood = 'good' | 'okay' | 'bad'
+
+export const MOOD_OPTIONS: { value: Mood; emoji: string; label: string }[] = [
+  { value: 'good', emoji: '😊', label: '好' },
+  { value: 'okay', emoji: '😐', label: '一般' },
+  { value: 'bad', emoji: '😢', label: '差' },
+]
+
+/** Mood record / 心情记录 */
+export interface MoodRecord {
+  id: string
+  date: string
+  mood: Mood
+}
+
+/** Structured health analysis / 结构化健康分析 */
+export interface HealthAnalysis {
+  id: string
+  date: string
+  healthScore: number
+  diet: { score: number; summary: string; suggestions: string[] }
+  water: { score: number; summary: string; suggestions: string[] }
+  sleep: { score: number; summary: string; suggestions: string[] }
+  exercise: { score: number; summary: string; suggestions: string[] }
+  riskAlerts: string[]
+  dailyAdvice: string
+  tomorrowAdvice: string
+  createdAt: string
+}
+
 /** Daily summary / 每日汇总 */
 export interface DailySummary {
   date: string
   entries: FoodEntry[]
   water?: WaterRecord
-  sleep?: SleepRecord
-  analysis?: AIAnalysis
+  sleep?: SleepRecord[]
+  exercise?: ExerciseRecord[]
+  mood?: MoodRecord
+  analysis?: HealthAnalysis
 }

@@ -4,7 +4,7 @@
 // ============================================================
 
 import { supabase } from './supabase'
-import type { FoodEntry, SleepRecord, WaterRecord } from './types'
+import type { FoodEntry, SleepRecord, WaterRecord, ExerciseRecord, MoodRecord, Mood, HealthAnalysis } from './types'
 
 // --- Helpers ---
 
@@ -172,4 +172,72 @@ export async function deleteWaterLog(date: string, logId: string): Promise<Water
 
 export async function resetWater(date: string): Promise<void> {
   await supabase.from('water_logs').delete().eq('date', date)
+}
+
+// ============================================================
+// Exercise Records / 运动记录
+// ============================================================
+
+export async function getExerciseByDate(date: string): Promise<ExerciseRecord[]> {
+  const { data, error } = await supabase.from('exercise_records').select('*').eq('date', date)
+  if (error) { console.error(error); return [] }
+  return (data || []).map((r: any) => ({ id: r.id, date: r.date, type: r.type, duration: r.duration, note: r.note || undefined }))
+}
+
+export async function saveExercise(record: Omit<ExerciseRecord, 'id'>): Promise<ExerciseRecord> {
+  const full = { ...record, id: generateId() }
+  const { error } = await supabase.from('exercise_records').insert([{ id: full.id, date: full.date, type: full.type, duration: full.duration, note: full.note || null }])
+  if (error) console.error(error)
+  return full as ExerciseRecord
+}
+
+export async function deleteExercise(id: string): Promise<boolean> {
+  const { error } = await supabase.from('exercise_records').delete().eq('id', id)
+  return !error
+}
+
+// ============================================================
+// Mood Records / 心情记录
+// ============================================================
+
+export async function getMoodByDate(date: string): Promise<MoodRecord | null> {
+  const { data, error } = await supabase.from('mood_records').select('*').eq('date', date).limit(1).single()
+  if (error) return null
+  return data ? { id: data.id, date: data.date, mood: data.mood as Mood } : null
+}
+
+export async function saveMood(date: string, mood: Mood): Promise<MoodRecord> {
+  // Delete existing, then insert
+  await supabase.from('mood_records').delete().eq('date', date)
+  const id = generateId()
+  const { error } = await supabase.from('mood_records').insert([{ id, date, mood }])
+  if (error) console.error(error)
+  return { id, date, mood }
+}
+
+// ============================================================
+// Health Analysis / 健康分析
+// ============================================================
+
+export async function getAnalysisByDate(date: string): Promise<HealthAnalysis | null> {
+  const { data, error } = await supabase.from('health_analyses').select('*').eq('date', date).limit(1).single()
+  if (error || !data) return null
+  return { id: data.id, date: data.date, healthScore: data.health_score, ...data.analysis_json, createdAt: data.created_at }
+}
+
+export async function saveAnalysis(analysis: Omit<HealthAnalysis, 'id'>): Promise<HealthAnalysis> {
+  // Delete existing for date, then insert
+  await supabase.from('health_analyses').delete().eq('date', analysis.date)
+  const id = generateId()
+  const { error } = await supabase.from('health_analyses').insert([{
+    id, date: analysis.date, health_score: analysis.healthScore,
+    analysis_json: {
+      diet: analysis.diet, water: analysis.water, sleep: analysis.sleep,
+      exercise: analysis.exercise, riskAlerts: analysis.riskAlerts,
+      dailyAdvice: analysis.dailyAdvice, tomorrowAdvice: analysis.tomorrowAdvice,
+    },
+    created_at: new Date().toISOString(),
+  }])
+  if (error) console.error(error)
+  return { ...analysis, id, createdAt: new Date().toISOString() }
 }
