@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { getEntriesByDate, getSleepByDate, getWaterByDate } from '@/lib/data-store'
+import { getEntriesByDate, getSleepByDate, getWaterByDate, getExerciseByDate, getMoodByDate } from '@/lib/data-store'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const days = parseInt(searchParams.get('days') || '14')
+  const days = parseInt(searchParams.get('days') || '30')
 
   const today = new Date()
   const results = []
@@ -13,14 +13,21 @@ export async function GET(request: Request) {
     d.setDate(d.getDate() - i)
     const dateStr = d.toISOString().split('T')[0]
 
-    const [entries, sleep, water] = await Promise.all([
-      getEntriesByDate(dateStr),
-      getSleepByDate(dateStr),
-      getWaterByDate(dateStr),
+    const [entries, sleep, water, exercise, mood] = await Promise.all([
+      getEntriesByDate(dateStr), getSleepByDate(dateStr), getWaterByDate(dateStr),
+      getExerciseByDate(dateStr), getMoodByDate(dateStr),
     ])
 
-    if (entries.length > 0 || sleep.length > 0 || water) {
-      results.push({ date: dateStr, entries, sleep, water })
+    // Only include dates that have at least some data
+    if (entries.length > 0 || sleep.length > 0 || water || exercise.length > 0 || mood) {
+      results.push({
+        date: dateStr,
+        entries: entries.map(e => ({ mealType: e.mealType, foodName: e.foodName })),
+        sleep: sleep.map(s => ({ type: s.type, duration: s.duration })),
+        water: water ? { totalMl: water.totalMl } : null,
+        exercise: exercise.map(e => ({ type: e.type, duration: e.duration })),
+        mood: mood ? { mood: mood.mood } : null,
+      })
     }
   }
 
