@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }
 
     // Get entries for the date / 获取该日期的饮食记录
-    const entries = getEntriesByDate(date)
+    const entries = await getEntriesByDate(date)
     if (entries.length === 0) {
       return NextResponse.json(
         { error: 'No entries found for this date' },
